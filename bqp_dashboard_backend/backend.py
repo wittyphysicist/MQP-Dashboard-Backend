@@ -41,3 +41,20 @@ def login():
             "user_token": user.email,  # TODO change with data-model-v2
             "force_secret_reset": user.force_secret_reset,
         }
+
+
+@backend.get("/tokens")
+def tokens():
+    user = request.get_json()["user_token"]
+
+    return []
+
+
+@backend.get("/tokens?create")
+def create_token():
+    raise NotImplementedError
+
+
+@backend.get("/token?revoke")
+def revoke_token():
+    raise NotImplementedError

@@ -51,6 +51,15 @@ def create_local_database():
             )
 
             database_access.users.create_new_user_with_secret(
+                "test_secret_change_user",
+                "test_old_password",
+                "BASIC",
+                "test@lrz.de",
+                "LRZ",
+                "quantum",
+            )
+
+            database_access.users.create_new_user_with_secret(
                 "blocked_test_user",
                 "test_password",
                 "BASIC",

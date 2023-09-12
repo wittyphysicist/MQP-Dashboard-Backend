@@ -6,7 +6,7 @@ groups = ["default", "test"]
 cross_platform = true
 static_urls = false
 lock_version = "4.3"
-content_hash = "sha256:858a6648d24bc5b68a16a15130077700a091693fd3c6b271ded3241a53235737"
+content_hash = "sha256:5b4031df5de3cf067115fb95ca94d61983d9802b178c22c691a34509a9928b51"
 
 [[package]]
 name = "bcrypt"
@@ -110,6 +110,21 @@ dependencies = [
 files = [
     {file = "Flask-2.3.2-py3-none-any.whl", hash = "sha256:77fd4e1249d8c9923de34907236b747ced06e5467ecac1a7bb7115ae0e9670b0"},
     {file = "Flask-2.3.2.tar.gz", hash = "sha256:8c2f9abd47a9e8df7f0c3f091ce9497d011dc3b31effcf4c85a6e2b50f4114ef"},
+]
+
+[[package]]
+name = "flask-jwt-extended"
+version = "4.5.2"
+requires_python = ">=3.7,<4"
+summary = "Extended JWT integration with Flask"
+dependencies = [
+    "Flask<3.0,>=2.0",
+    "PyJWT<3.0,>=2.0",
+    "Werkzeug>=0.14",
+]
+files = [
+    {file = "Flask-JWT-Extended-4.5.2.tar.gz", hash = "sha256:ba56245ba43b71c8ae936784b867625dce8b9956faeedec2953222e57942fb0b"},
+    {file = "Flask_JWT_Extended-4.5.2-py2.py3-none-any.whl", hash = "sha256:e0ef23d8c863746bd141046167073699e1a7b03c97169cbba70f05b8d9cd6b9e"},
 ]
 
 [[package]]
@@ -300,6 +315,16 @@ files = [
     {file = "psycopg2_binary-2.9.6-cp39-cp39-musllinux_1_1_x86_64.whl", hash = "sha256:02c0f3757a4300cf379eb49f543fb7ac527fb00144d39246ee40e1df684ab514"},
     {file = "psycopg2_binary-2.9.6-cp39-cp39-win32.whl", hash = "sha256:c3dba7dab16709a33a847e5cd756767271697041fbe3fe97c215b1fc1f5c9848"},
     {file = "psycopg2_binary-2.9.6-cp39-cp39-win_amd64.whl", hash = "sha256:f6a88f384335bb27812293fdb11ac6aee2ca3f51d3c7820fe03de0a304ab6249"},
+]
+
+[[package]]
+name = "pyjwt"
+version = "2.8.0"
+requires_python = ">=3.7"
+summary = "JSON Web Token implementation in Python"
+files = [
+    {file = "PyJWT-2.8.0-py3-none-any.whl", hash = "sha256:59127c392cc44c2da5bb3192169a91f429924e17aff6534d70fdc02ab3e04320"},
+    {file = "PyJWT-2.8.0.tar.gz", hash = "sha256:57e28d156e3d5c10088e0c68abb90bfac3df82b40a71bd0daa20c65ccd5c23de"},
 ]
 
 [[package]]

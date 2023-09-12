@@ -11,8 +11,8 @@ def test_correct_login(inactive_client) -> None:
     response = inactive_client.post("/login", json=user_data)
 
     assert (
-        response.json["status"] == HTTPStatus.OK
-        and response.json["user_token"] is not None
+        response.status_code == HTTPStatus.OK
+        and response.json["access_token"] is not None
         and response.json["force_secret_reset"] is not None
     )
 
@@ -24,7 +24,7 @@ def test_login_with_non_existing_user(inactive_client) -> None:
 
     response = inactive_client.post("/login", json=user_data)
 
-    assert response.json["status"] == HTTPStatus.UNAUTHORIZED
+    assert response.status_code == HTTPStatus.UNAUTHORIZED
 
 
 def test_login_with_wrong_password(inactive_client) -> None:
@@ -34,7 +34,7 @@ def test_login_with_wrong_password(inactive_client) -> None:
 
     response = inactive_client.post("/login", json=user_data)
 
-    assert response.json["status"] == HTTPStatus.UNAUTHORIZED
+    assert response.status_code == HTTPStatus.UNAUTHORIZED
 
 
 def test_login_with_blocked_user(inactive_client) -> None:
@@ -44,4 +44,4 @@ def test_login_with_blocked_user(inactive_client) -> None:
 
     response = inactive_client.post("/login", json=user_data)
 
-    assert response.json["status"] == HTTPStatus.UNAUTHORIZED
+    assert response.status_code == HTTPStatus.UNAUTHORIZED

@@ -9,6 +9,7 @@ from pony.orm import TransactionError
 from pony.orm import select
 from datetime import datetime
 from http import HTTPStatus
+from werkzeug.datastructures import Headers
 
 
 @pytest.fixture(scope="module")
@@ -105,11 +106,13 @@ def active_client(app):
     login_response = client.post("/login", json=user_data)
 
     assert (
-        login_response.json["status"] == HTTPStatus.OK
-        and login_response.json["user_token"] is not None
+        login_response.status_code == HTTPStatus.OK
+        and login_response.json["access_token"] is not None
     )
 
-    client.user_token = login_response.json["user_token"]
+    client.headers = Headers()
+    client.headers.add("Content-Type", "application/json")
+    client.headers.add("Authorization", "Bearer " + login_response.json["access_token"])
 
     return client
 

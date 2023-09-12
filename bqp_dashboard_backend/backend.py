@@ -1,11 +1,14 @@
-from flask import current_app, Blueprint, request
-
 import string
 import os
 import secrets
 from http import HTTPStatus
 from hashlib import md5
 from datetime import datetime, timedelta
+
+
+from flask import current_app, Blueprint, request
+from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
+
 
 import bqp_database_access as database
 from bqp_database_access.users import UnknownIdentityError
@@ -43,31 +46,36 @@ def login_user():
         user = database.users.fetch_user_by_identity(request_data["identity"])
 
         if user.blocked:
+            # TODO handle through actual exception
             raise RuntimeError("user is blocked")
 
     except Exception as error:
         # TODO log error
 
         return {
-            "status": HTTPStatus.UNAUTHORIZED,
             "error_message": "The identity/password is not valid. Please try again!",
-        }
+        }, HTTPStatus.UNAUTHORIZED
 
     else:
+        # generate JWT
+        access_token = create_access_token(
+            identity=identity, expires_delta=timedelta(minutes=15)
+        )
+
         return {
-            "status": HTTPStatus.OK,
-            "user_token": user.identity,
+            "access_token": access_token,
             "force_secret_reset": user.force_secret_reset,
-        }
+        }, HTTPStatus.OK
 
 
 @backend.post("/tokens")
+@jwt_required()
 def create_token():
     """Create a token with given token data."""
 
     request_data = request.get_json()
 
-    user_token = request_data["user_token"]
+    user_token = get_jwt_identity()
     remember_name = request_data["token_name"]
 
     expiration = datetime.combine(
@@ -88,41 +96,35 @@ def create_token():
         )
 
         return {
-            "status": HTTPStatus.OK,
             "token_data": {
                 "token_value": token,
                 "token_name": remember_name,
                 "token_expiration": expiration.isoformat(),
-            },
-        }
+            }
+        }, HTTPStatus.OK
 
     except TooManyTokensError as error:
         return {
-            "status": HTTPStatus.FORBIDDEN,
             "error_message": "Too many tokens alive.",
-        }
+        }, HTTPStatus.FORBIDDEN
 
     except TokenExpirationBeforeNow as error:
         return {
-            "status": HTTPStatus.FORBIDDEN,
             "error_message": "Token expiration before now.",
-        }
+        }, HTTPStatus.FORBIDDEN
 
     except TokenExpirationAfterMaximum as error:
         return {
-            "status": HTTPStatus.FORBIDDEN,
             "error_message": "Token expiration beyond user limit.",
-        }
+        }, HTTPStatus.FORBIDDEN
 
 
 @backend.get("/tokens")
+@jwt_required()
 def get_all_tokens():
     """Get all tokens that belong to user."""
 
-    request_data = request.get_json()
-
-    identity = request_data["user_token"]
-
+    identity = get_jwt_identity()
     tokens = database.tokens.fetch_active_tokens_of_identity(identity)
 
     sanitized_tokens = [
@@ -134,36 +136,37 @@ def get_all_tokens():
     ]
 
     return {
-        "status": HTTPStatus.OK,
         "tokens": sanitized_tokens,
-    }
+    }, HTTPStatus.OK
 
 
 @backend.delete("/tokens")
+@jwt_required()
 def revoke_token():
     """Revoke given token and owner combination."""
 
     request_data = request.get_json()
+    identity = get_jwt_identity()
 
     try:
         database.tokens.revoke_token_by_name_and_identity(
-            request_data["token_name"], request_data["token_owner"]
+            request_data["token_name"], identity
         )
 
-        return {"status": HTTPStatus.OK}
+        return {"message": f"Revoked {request_data['token_name']}."}, HTTPStatus.OK
 
     except TokenNotFound as error:
-        return {"status": HTTPStatus.BAD_REQUEST}
+        return {"error_message": "Token not found."}, HTTPStatus.BAD_REQUEST
 
 
 @backend.get("/jobs")
+@jwt_required()
 def fetch_all_jobs():
     """Fetch all jobs belonging to a user."""
 
-    request_data = request.get_json()
-
-    jobs = database.jobs.fetch_by_identity(request_data["user_token"])
+    identity = get_jwt_identity()
+    jobs = database.jobs.fetch_by_identity(identity)
 
     sanitized_jobs = [job.to_dict() for job in jobs]
 
-    return {"status": HTTPStatus.OK, "jobs": sanitized_jobs}
+    return {"jobs": sanitized_jobs}, HTTPStatus.OK

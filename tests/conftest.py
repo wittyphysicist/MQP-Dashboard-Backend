@@ -98,6 +98,15 @@ def inactive_client(app):
     return app.test_client()
 
 
+def create_header(response) -> Headers:
+    header = Headers()
+
+    header.add("Content-Type", "application/json")
+    header.add("Authorization", "Bearer " + response.json["access_token"])
+
+    return header
+
+
 @pytest.fixture(scope="module")
 def active_client(app):
     client = app.test_client()
@@ -110,9 +119,24 @@ def active_client(app):
         and login_response.json["access_token"] is not None
     )
 
-    client.headers = Headers()
-    client.headers.add("Content-Type", "application/json")
-    client.headers.add("Authorization", "Bearer " + login_response.json["access_token"])
+    client.headers = create_header(login_response)
+
+    return client
+
+
+@pytest.fixture(scope="module")
+def active_client_for_secret_change(app):
+    client = app.test_client()
+
+    user_data = {"identity": "test_secret_change_user", "secret": "test_old_password"}
+    login_response = client.post("/login", json=user_data)
+
+    assert (
+        login_response.status_code == HTTPStatus.OK
+        and login_response.json["access_token"] is not None
+    )
+
+    client.headers = create_header(login_response)
 
     return client
 

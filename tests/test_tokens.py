@@ -8,6 +8,14 @@ from datetime import datetime, timedelta
 import pytest
 
 
+def test_token_endpoint_inactive(inactive_client) -> None:
+    """Test if the /tokens endpoint checks for a JWT."""
+
+    response = inactive_client.get("/tokens")
+
+    assert response.status_code == HTTPStatus.UNAUTHORIZED
+
+
 def test_token_creation(active_client) -> None:
     """Test if token creation is working."""
 
@@ -91,6 +99,8 @@ def test_token_creation_with_expiration_before_now(active_client) -> None:
 
 
 def test_fetch_all_tokens(active_client) -> None:
+    """Tests to check if fetching all tokens is possible."""
+
     response = active_client.get("/tokens", headers=active_client.headers)
 
     expected_expiration = datetime.combine(

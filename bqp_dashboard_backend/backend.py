@@ -1,10 +1,12 @@
 import json
+import logging
 import string
 import os
 import secrets
 from http import HTTPStatus
 from hashlib import md5
 from datetime import datetime, timedelta
+from .ldap_auth import ldap_authentication
 
 
 from flask import current_app, Blueprint, request, json
@@ -38,18 +40,21 @@ def login_user():
     identity = request_data["identity"]
     secret = request_data["secret"]
 
-    # TODO authenticate against LDAP
-
     try:
-        if not database.users.authenticate(identity, secret):
-            raise RuntimeError("failed to authenticate")
-
-        user = database.users.fetch_user_by_identity(identity)
-
-        if user.blocked:
-            # TODO handle through actual exception
-            raise RuntimeError("user is blocked")
-
+        # Authenticate against LDAP
+        auth_user = ldap_authentication(identity, secret)
+        # logging.warning(auth_user)
+        if auth_user is None:
+            # authenticate QC user
+            if not database.users.authenticate(identity, secret):
+                raise RuntimeError("Failed to authenticate")
+            # validate user
+            user = database.users.fetch_user_by_identity(identity)
+            if user is None:
+                raise RuntimeError("Identity/Password is invalid!")
+            if user.blocked:
+                # TODO handle through actual exception
+                raise RuntimeError("user is blocked")
     except Exception as error:
         # TODO log error
 
@@ -58,6 +63,9 @@ def login_user():
         }, HTTPStatus.UNAUTHORIZED
 
     else:
+        logging.warning("LDAP Successfully authentication")
+        logging.warning(auth_user)
+
         # generate JWT
         access_token = create_access_token(
             identity=identity, expires_delta=timedelta(minutes=15)
@@ -67,7 +75,6 @@ def login_user():
             "access_token": access_token,
             "force_secret_reset": user.force_secret_reset,
         }, HTTPStatus.OK
-
 
 @backend.post("/tokens")
 @jwt_required()

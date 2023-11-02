@@ -41,20 +41,26 @@ def login_user():
     secret = request_data["secret"]
 
     try:
-        # Authenticate against LDAP
-        auth_user = ldap_authentication(identity, secret)
-        # logging.warning(auth_user)
-        if auth_user is None:
-            # authenticate QC user
-            if not database.users.authenticate(identity, secret):
-                raise RuntimeError("Failed to authenticate")
-            # validate user
-            user = database.users.fetch_user_by_identity(identity)
-            if user is None:
-                raise RuntimeError("Identity/Password is invalid!")
-            if user.blocked:
-                # TODO handle through actual exception
-                raise RuntimeError("user is blocked")
+        # validate identity
+        user = database.users.fetch_user_by_identity(identity)
+        # logging.warning(user.affiliation)
+        if user is None:
+            raise RuntimeError("Identity does not exist!")
+
+        if user.affiliation == 'LRZ':
+            # Authenticate against LDAP
+            auth_user = ldap_authentication(identity, secret)
+            # logging.warning(auth_user)
+            if auth_user is None:
+                raise RuntimeError("Failed to authenticate!")
+
+        elif not database.users.authenticate(identity, secret):
+            raise RuntimeError("Failed to authenticate!")
+
+        if user.blocked:
+            # TODO handle through actual exception
+            raise RuntimeError("user is blocked")
+
     except Exception as error:
         # TODO log error
 
@@ -63,8 +69,6 @@ def login_user():
         }, HTTPStatus.UNAUTHORIZED
 
     else:
-        logging.warning("LDAP Successfully authentication")
-        logging.warning(auth_user)
 
         # generate JWT
         access_token = create_access_token(

@@ -81,20 +81,52 @@ More commands will be found in `Makefile`
 Application should run at: http://localhost:5000
 
 
-### Unit testing with pytest
+### Testing
 
-In order for the unit-tests to run, following environment variables need to be set (test_db.db can in principle be anything except already existing files):
+This project uses PDM for package and dependency management. The public local test suite is intended to run from the `tests/` directory with environment values loaded from a local `.env` file.
+
+1. Install the development dependencies with PDM:
 
 ```sh
-export QUANTUM_DB_TESTING=TRUE
-export QUANTUM_DB_FILENAME=test_db.db
-export QUANTUM_DS_HOST=ldap://localhost:8888
+pdm install -G dev
 ```
 
-To run the tests, use pytest:
+2. Copy the safe example environment file to a private local `.env` file:
+
 ```sh
-pdm run pytest
+cp .env.example .env
 ```
+
+3. Load the variables into your shell before running tests:
+
+```sh
+set -a
+source .env
+set +a
+```
+
+4. Run the normal public test suite:
+
+```sh
+pdm run python -m pytest tests
+```
+
+The `.env.example` file contains placeholder values that are safe for local development and testing.
+
+These placeholder values are for local development/testing only. The `.env` file is local and private, and real `.env` files must not be committed. Do not include private credentials, private LDAP details, or deployment-specific information in this public README.
+
+If tests try to connect to PostgreSQL through `/var/run/postgresql/.s.PGSQL.5432`, the `.env` variables were probably not loaded or `QUANTUM_DB_TESTING=TRUE` is missing. Reload `.env` and confirm the testing variables are set before rerunning the tests.
+
+LDAP integration tests may require an explicitly configured LDAP test server and should not be expected to pass in a normal public/local setup. Run LDAP-dependent tests only when explicitly enabled and configured, for example with `RUN_LDAP_TESTS=TRUE` if that is how the tests are configured.
+
+CI or test workflows may use `uv` for execution, for example:
+
+```sh
+UV_PROJECT_ENVIRONMENT=.venv-ci uv run python -m pytest tests
+```
+
+This does not replace PDM; PDM remains the project package and dependency manager.
+
 
 ### Linting and Ruff check
 

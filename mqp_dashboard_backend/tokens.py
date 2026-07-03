@@ -28,7 +28,8 @@ from flask import Blueprint, request
 from flask_jwt_extended import get_jwt_identity, jwt_required
 from eliot import log_call
 import bqp_database_access as database
-from bqp_database_access._database import open_database
+
+# from bqp_database_access._database import open_database
 from bqp_database_access.tokens import (
     TokenExistsError,
     TokenExpirationAfterMaximum,
@@ -48,7 +49,7 @@ with STATIC_TOKEN_FILE.open("r", encoding="utf-8") as f:
 
 
 def _get_static_token_groups() -> list[str]:
-    return list(STATIC_TOKEN_CONFIG.keys())
+    return list(STATIC_TOKEN_CONFIG.key())
 
 
 def _get_token_from_usergroup(usergroup: str) -> str:
@@ -89,8 +90,9 @@ def create_token() -> tuple[dict, HTTPStatus]:
         datetime.now().date() + timedelta(days=int(request_data["validity"])),
         datetime.max.time(),
     )
-    quantum_db = open_database()
-    user = quantum_db.User.get(identity=user_token)  # pylint: disable=no-member
+    # quantum_db = open_database()
+    # user = quantum_db.User.get(identity=user_token)  # pylint: disable=no-member
+    user = database.users.fetch_user_by_identity(identity=user_token)
     _user_group_names = [user_group.name.upper() for user_group in user.user_groups]
     _static_token_usergroups = _get_static_token_groups()
     try:

@@ -47,7 +47,7 @@ show_missing = true
 skip_covered = false
 
 [project.optional-dependencies]
-dev = [
+docs = [
     "mkdocs>=1.6.1",
     "mkdocs-material>=9.6.2",
     "mkdocstrings-python>=0.26.1",
@@ -59,13 +59,17 @@ dev = [
     "pre-commit",
     "pytest>=7.4.0",
     "pytest-env>=0.8.2",
+    "pytest-cov>=7.1.0",
     "python-ldap-test>=0.3.1",
     "mkdocs",
     "mkdocs-material",
-    "mkdocstrings[python]",
-    "pytest-cov>=7.1.0",
-    "pylint>=4.0.6",
+    "mkdocstrings-python",
+    "pylint>=3.3.8",
+    "ruff>=0.15.20"
 ]
+
+[tool.pylint.format]
+max-line-length = 120
 
 [tool.pdm]
 distribution = true
@@ -73,6 +77,3 @@ cross_platform = true
 
 [tool.setuptools]
 packages = ["mqp_dashboard_backend"]
-
-[tool.pylint.format]
-max-line-length = 120

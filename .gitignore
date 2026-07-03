@@ -8,7 +8,7 @@ __pycache__/
 mqp_dashboard_backend/__pycache__/
 uploads/
 .devcontainer/
-
+tests/__pycache__/
 # C extensions
 *.so
 

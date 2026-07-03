@@ -73,7 +73,7 @@ def test_token_creation_with_existing_name(active_client, monkeypatch) -> None:
     """Test if token creation correctly fails when the token name already exists."""
 
     def raise_token_exists(*args, **kwargs):
-        raise tokens.TokenExistsError
+        raise tokens.TokenExistsError("test_remember_name_1")
 
     monkeypatch.setattr(tokens.database.tokens, "add_new_token", raise_token_exists)
 

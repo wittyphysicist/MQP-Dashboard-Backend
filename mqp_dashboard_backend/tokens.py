@@ -49,7 +49,7 @@ with STATIC_TOKEN_FILE.open("r", encoding="utf-8") as f:
 
 
 def _get_static_token_groups() -> list[str]:
-    return list(STATIC_TOKEN_CONFIG.key())
+    return list(STATIC_TOKEN_CONFIG.keys())
 
 
 def _get_token_from_usergroup(usergroup: str) -> str:

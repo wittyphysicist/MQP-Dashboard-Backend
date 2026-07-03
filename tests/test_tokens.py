@@ -6,6 +6,8 @@ The sequence of tests in this module is important.
 from http import HTTPStatus
 from datetime import datetime, timedelta
 
+from mqp_dashboard_backend import tokens
+
 
 def test_token_endpoint_inactive(inactive_client) -> None:
     """Test if the /tokens endpoint checks for a JWT."""
@@ -64,6 +66,32 @@ def test_mqp_edu_token_creation(active_client_mqp_edu) -> None:
         == "ThisIsAnEducationalTokenItCannotBeUsedToSubmitJobsThisIsAnEducat"
         and response.json["token_data"]["token_name"] == "test_remember_name_2"
         and response.json["token_data"]["token_expiration"] == expected_expiration
+    )
+
+
+def test_token_creation_with_existing_name(active_client, monkeypatch) -> None:
+    """Test if token creation correctly fails when the token name already exists."""
+
+    def raise_token_exists(*args, **kwargs):
+        raise tokens.TokenExistsError
+
+    monkeypatch.setattr(tokens.database.tokens, "add_new_token", raise_token_exists)
+
+    token_data = {
+        "token_name": "test_remember_name_1",
+        "validity": 7,
+        "max_nb_jobs": 5,
+        "max_budget": 1000,
+    }
+
+    response = active_client.post(
+        "/tokens/new", json=token_data, headers=active_client.headers
+    )
+
+    assert (
+        response.status_code == HTTPStatus.FORBIDDEN
+        and response.json["error_message"]
+        == "Token test_remember_name_1 already exists."
     )
 
 

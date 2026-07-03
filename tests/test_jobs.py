@@ -61,9 +61,13 @@ def test_fetch_all_jobs_cancelled(active_client) -> None:
 def test_fetch_job_by_id(active_client) -> None:
     """Test if a job can be fetched by a job id."""
 
-    response = active_client.get("/jobs/0", headers=active_client.headers)
+    job_id = 111
+
+    response = active_client.get(f"/jobs/{job_id}", headers=active_client.headers)
 
     assert response.status_code == HTTPStatus.OK
+    assert response.json["job"] is not None
+    assert response.json["job"]["id"] == job_id
 
 
 @pytest.mark.skip(reason="Feature not implemented yet")
